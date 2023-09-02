@@ -23,6 +23,7 @@ const FetchList = () => {
     const dispatch = useDispatch()
     const [pokemons, setPokemons] = useState(null)
     const [next, setNext] = useState("")
+    const [pokemonSelected, setPokemonSelected]= useState(null)
 
     const getPokemons = async () => {
         try {
@@ -44,6 +45,21 @@ const FetchList = () => {
         getPokemons()
     }, [])
 
+    const openPokemonModal = async (pokemon) => {
+    try {
+      dispatch(appActions.loading(true));
+      const response = await api.GET(pokemon.url);
+
+      if (response) {
+        setPokemonSelected(response);
+        //setOpenDetailsDialog(true);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      dispatch(appActions.loading(false));
+    }
+  };
 
     const renderItem = (item) => {
         const path = item.url.split('/')
@@ -51,26 +67,27 @@ const FetchList = () => {
         console.log(path)
 
         const modalShow = () => {
+            openPokemonModal(item)
             mostrarModal.fire({
                 title: item.name,
                 html: (
                     <div className="modal">
                         <img src={`${IMG_URL}/${imgID}.png`} alt="" width={150} />
                         <div className="description">
-                            <p>Altura: {pokemons.height}</p>
-                            <p>Peso: {pokemons.weight}</p>
-                            <p>Experiencia Basica: {pokemons.base_experience}</p>
+                            <p>Altura:{" "}<b>{pokemonSelected.height}</b> </p>
+                            <p>Peso:{" "} <b>{pokemonSelected.weight}</b></p>
+                            <p>Experiencia Basica:{" "} <b>{pokemonSelected.base_experience}</b></p>
+                            <p>Habilidades:{" "}</p>
+                        
+                                <p>{pokemonSelected.abilities?.map((item, index) => {
+                                    return <li key={index}><b>{item.ability.name}</b> </li>;
+                                })}</p>
+                            
                             <p>
-                                Habilidades:{" "}
-                                {pokemons.abilities?.map((item, index) => {
-                                    return <span key={index}>{item.ability.name}, </span>;
-                                })}
-                            </p>
-                            <p>
-                                Tipo/s:{" "}
-                                {pokemons.types?.map((item, index) => {
-                                    return <span key={index}>{item.type.name}, </span>;
-                                })}
+                                <p>Tipo/s:{" "}</p>
+                                <p>{pokemonSelected.types?.map((item, index) => {
+                                    return <li key={index}><b>{item.type.name} </b></li>;
+                                })}</p>
                             </p>
                         </div>
                     </div>
@@ -78,6 +95,7 @@ const FetchList = () => {
                 showConfirmButton: false,
                 showCloseButton: true,
             })
+            
             console.log(pokemons[0].height);
         }
 
@@ -174,28 +192,8 @@ const FetchList = () => {
                 </Card>
 
             </Grid>
+            
         </Grid >
     );
 };
 export default FetchList;
-
-// function FetchList() {
-//     const [active, setActive] = useState(true)
-
-//     const toogle = () => {
-//         setActive(!active)
-//     }
-
-//     return (
-//         <div className="fetchlist">
-//             <button onClick={toogle}>
-//                 abrir modal
-//             </button>
-//             <Modal active={active} toggle={toogle}>
-//                 <h1>Hola Modal</h1>
-//             </Modal>
-//         </div>
-
-//     )
-
-// } export default FetchList;
